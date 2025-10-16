@@ -6,10 +6,11 @@
 	home.homeDirectory = "/home/yaoyun";
 
     imports = [
-        ./neovim
+        # ./neovim
     ];
 
 	home.packages = with pkgs; [
+                neovim
 		zoxide
 		btop
 		bat
