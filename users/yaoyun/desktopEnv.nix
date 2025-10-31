@@ -1,0 +1,8 @@
+{ ... }:
+{
+  imports = [
+    ./stylix
+    ./caelestia
+    ./hyprland
+  ];
+}

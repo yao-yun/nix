@@ -1,0 +1,11 @@
+{
+    "nix.serverSettings": {
+        "nixd": {
+            "options": {
+                "nixos": {
+                    "expr": "(builtins.getFlake \"/home/yaoyun/Documents/Dev/try-nix/nixos/flake.nix\").nixosConfigurations.<name>.options",
+                },
+            }
+        }
+    }
+}

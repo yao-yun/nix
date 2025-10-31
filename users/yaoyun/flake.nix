@@ -1,26 +1,40 @@
 {
-  description = "My home manager configuration with external home modules";
+  description = "Home Manager configuration of yaoyun";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs";
-    home-manager.url = "github:nix-community/home-manager";
-    # Add the flake that provides the home module
-    my-nixcats.url = "path:./neovim-nixcats";
-  };
-
-  outputs = { self, nixpkgs, home-manager, my-nixcats }: {
-    homeConfigurations = {
-      "myusername" = home-manager.lib.homeManagerConfiguration {
-        # Import the necessary modules
-        pkgs = import nixpkgs { system = "x86_64-linux"; };
-
-        # Include the module from your flake
-        modules = [
-          my-nixcats.homeModules
-          ./home.nix
-        ];
-      };
+    # Specify the source of Home Manager and Nixpkgs.
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    nixCats.url = "github:BirdeeHub/nixCats-nvim";
+    caelestia-shell = {
+      url = "github:caelestia-dots/shell";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    stylix = {
+      url = "github:nix-community/stylix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    zen-browser = {
+      url = "github:0xc000022070/zen-browser-flake";
+      # IMPORTANT: we're using "libgbm" and is only available in unstable so ensure
+      # to have it up-to-date or simply don't specify the nixpkgs input
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    firefox-addons = {
+      url = "gitlab:rycee/nur-expressions?dir=pkgs/firefox-addons";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
-}
 
+  outputs =
+    { nixpkgs, home-manager, ... }@inputs:
+    {
+      homeConfigurations."yaoyun" = home-manager.lib.homeManagerConfiguration {
+        modules = [ ./home.nix ];
+        extraSpecialArgs = { inherit inputs; };
+      };
+    };
+}

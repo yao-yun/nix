@@ -2,13 +2,81 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, ... }:
+{
+  pkgs,
+  lib,
+  ...
+}:
 
 {
-  imports =
-    [ # Include the results of the hardware scan.
-      ./hardware-configuration.nix
+  stylix = {
+    enable = true;
+    base16Scheme = "${pkgs.base16-schemes}/share/themes/edge-dark.yaml";
+  };
+  imports = [
+    # Include the results of the hardware scan.
+    # ./hardware-configuration.nix
+  ];
+
+  networking = {
+    hostName = "nixos";
+    wireless.iwd.enable = true;
+    networkmanager.enable = true;
+    networkmanager.wifi.backend = "iwd";
+    iproute2.enable = true;
+  };
+
+  programs = {
+    neovim = {
+      enable = true;
+      vimAlias = true;
+    };
+  };
+
+  environment.systemPackages = with pkgs; [
+    (lib.hiPrio uutils-coreutils-noprefix)
+    file
+  ];
+
+  services = {
+    openssh = {
+      enable = true;
+      settings = {
+        PermitRootLogin = "no";
+        PasswordAuthentication = true;
+      };
+      openFirewall = true;
+    };
+    pipewire = {
+      enable = true;
+      alsa.enable = true;
+      alsa.support32Bit = true;
+      pulse.enable = true;
+    };
+  };
+
+  # set up as virtualisation guest
+  virtualisation.vmVariant = {
+    virtualisation.cores = 8;
+    virtualisation.memorySize = 1024 * 8;
+    virtualisation.diskSize = 1024 * 30;
+    virtualisation.qemu.options = [
+      "-device virtio-vga-gl"
+      "-display gtk,gl=on"
+      "-audiodev pipewire,id=audio0"
+      "-device intel-hda"
+      "-device hda-output,audiodev=audio0"
     ];
+    hardware.graphics.enable = true;
+    services = {
+      qemuGuest.enable = true;
+      spice-vdagentd.enable = true;
+    };
+  };
+
+  environment.sessionVariables = lib.mkVMOverride {
+    WLR_NO_HARDWARE_CURSORS = "1";
+  };
 
   # Bootloader.
   boot.loader.grub.enable = true;
@@ -18,15 +86,11 @@
   # Use latest kernel.
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
-  networking.hostName = "nixos"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Configure network proxy if necessary
   # networking.proxy.default = "http://user:password@proxy:port/";
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
-
-  # Enable networking
-  networking.networkmanager.enable = true;
 
   # Set your time zone.
   time.timeZone = "Asia/Singapore";
@@ -52,14 +116,39 @@
     variant = "";
   };
 
+  # display (login) manager
+  services.greetd = {
+    enable = true;
+    useTextGreeter = true;
+    settings = {
+      default_session = {
+        command = "${pkgs.tuigreet}/bin/tuigreet --time --cmd Hyprland";
+        user = "greeter";
+      };
+    };
+  };
+
+  systemd.services.greetd.serviceConfig = {
+    Type = "idle";
+    StandardInput = "tty";
+    StandardOutput = "tty";
+    StandardError = "journal";
+    TTYReset = true;
+    TTYVHangup = true;
+    TTYVTDisallocate = true;
+  };
+
+  # uwsm wrapper
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
-
   # List packages installed in system profile. To search, run:
   # $ nix search wget
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
   # environment.systemPackages = with pkgs; [];
 
   # Some programs need SUID wrappers, can be configured further or are
@@ -69,27 +158,45 @@
   #   enable = true;
   #   enableSSHSupport = true;
   # };
+  #
+  xdg = {
+    portal = {
+      enable = true;
+      extraPortals = with pkgs; [
+        xdg-desktop-portal-hyprland
+        xdg-desktop-portal-gtk
+      ];
+      config = {
+        hyprland = {
+          default = [
+            "hyprland"
+            "gtk"
+          ];
+        };
+      };
+    };
+  };
 
   # List services that you want to enable:
 
-	#  # Enable the OpenSSH daemon.
-	#  services.openssh = {
-	# enable = true;
-	# settings = {
-	# 	PermitRootLogin = "no";
-	# 	PasswordAuthentication = true;
-	# };
-	# openFirewall = true;
-	#  };
-	#
-	#  # Enable pipewire 
-	# 	security.rtkit.enable = true;
-	# services.pipewire = {
-	# 	enable = true; 
-	# 	alsa.enable = true;
-	# 	alsa.support32Bit = true;
-	# 	pulse.enable = true;
-	# };
+  #  # Enable the OpenSSH daemon.
+  #  services.openssh = {
+  # enable = true;
+  # settings = {
+  # 	PermitRootLogin = "no";
+  # 	PasswordAuthentication = true;
+  # };
+  # openFirewall = true;
+  #  };
+  #
+  #  # Enable pipewire
+  # 	security.rtkit.enable = true;
+  # services.pipewire = {
+  # 	enable = true;
+  # 	alsa.enable = true;
+  # 	alsa.support32Bit = true;
+  # 	pulse.enable = true;
+  # };
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
