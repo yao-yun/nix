@@ -1,3 +1,4 @@
+{ lib }:
 rec {
   _toInt =
     str:
@@ -71,6 +72,7 @@ rec {
     let
       _mods = _ensureStringList mods;
       _keys = _ensureStringList keys;
+
       _dispWithParams = _ensureStringList dispWithParams;
       flaggedBind = "bind" + flags;
     in
@@ -102,13 +104,8 @@ rec {
     mkFuncBinds mod (builtins.genList (i: toString (i + 1)) 9) (
       _: numKey: dispatcher (_toInt numKey)
     ) flags;
-  mkSubmap = name: escMods: escKeys: bindList: {
-    submaps.${name}.settings = mergeBinds (
-      bindList
-      ++ [
-        (mkBinds escMods escKeys "submap" "reset" "")
-      ]
-    );
+  mkSubmap = name: bindSettings: {
+    submaps.${name}.settings = lib.mkMerge bindSettings;
   };
   mergeBinds = (bindList: builtins.foldl' (acc: bind: _deepMerge acc bind) { } bindList);
   expandBinds = (

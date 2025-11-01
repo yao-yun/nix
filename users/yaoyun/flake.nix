@@ -27,6 +27,11 @@
       url = "gitlab:rycee/nur-expressions?dir=pkgs/firefox-addons";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    hyprland.url = "github:hyprwm/Hyprland?ref=v0.51.0";
+    hy3 = {
+      url = "github:outfoxxed/hy3?ref=hl0.51.0";
+      inputs.hyprland.follows = "hyprland";
+    };
   };
 
   outputs =
