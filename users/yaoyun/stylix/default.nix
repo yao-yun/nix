@@ -11,6 +11,13 @@
       package = pkgs.apple-cursor;
       size = 24;
     };
+    icons = {
+      enable = true;
+      light = "Papirus-Light";
+      dark = "Papirus-Dark";
+      package = pkgs.papirus-icon-theme;
+    };
+    base16Scheme = "${pkgs.base16-schemes}/share/themes/0x96f.yaml";
     fonts = {
       serif = {
         package = pkgs.source-han-serif;

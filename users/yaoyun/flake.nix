@@ -41,5 +41,55 @@
         modules = [ ./home.nix ];
         extraSpecialArgs = { inherit inputs; };
       };
+      nixosModules."yaoyun" = [
+        inputs.stylix.nixosModules.stylix
+
+        inputs.home-manager.nixosModules.home-manager
+        {
+          home-manager = {
+            useGlobalPkgs = false;
+            useUserPackages = true;
+            backupFileExtension = "hmbak";
+
+            users.yaoyun = ./home.nix;
+
+            extraSpecialArgs = {
+              inherit inputs;
+            };
+          };
+        }
+
+        {
+          imports = [
+            ./nixos/steam.nix
+          ];
+        }
+
+        (
+          { pkgs, ... }:
+          {
+            users.users.yaoyun = {
+              isNormalUser = true;
+              home = "/home/yaoyun";
+              shell = pkgs.fish;
+              extraGroups = [
+                "NetworkManager"
+                "wheel"
+              ];
+              password = "changeme";
+              openssh.authorizedKeys.keys = [
+                "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINpzFyoXVgbIDrdlyuG0qXAnmMh6TEINBvI/TD98NvNe openpgp:0x99234C74"
+              ];
+            };
+            programs.fish.enable = true;
+
+            i18n.extraLocales = [
+              "en_US.UTF-8/UTF-8"
+              "zh_CN.UTF-8/UTF-8"
+            ];
+          }
+        )
+
+      ];
     };
 }

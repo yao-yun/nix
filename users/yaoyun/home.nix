@@ -2,8 +2,11 @@
   pkgs,
   ...
 }:
-
 {
+  # options.yaoyun = {
+  #   desktopEnv = mkEnableOption "desktop environment, with hyprland and caelestia";
+  #   shellEnv = mkEnableOption "shell programs and utils with yaoyun's config";
+  # };
   # Home Manager needs a bit of information about you and the paths it should
   # manage.
   home.username = "yaoyun";
@@ -20,6 +23,7 @@
 
   imports = [
     ./desktopEnv.nix
+    ./desktop.nix
     ./shellEnv.nix
     ./zen-browser.nix
   ];
@@ -61,4 +65,5 @@
 
   # Let Home Manager install and manage itself.
   programs.home-manager.enable = true;
+
 }
