@@ -1,12 +1,17 @@
 {
   inputs,
   config,
+  pkgs,
   ...
 }:
 {
   # enable caelestia
   imports = [
     inputs.caelestia-shell.homeManagerModules.default
+  ];
+  # deps
+  home.packages = with pkgs; [
+    gpu-screen-recorder
   ];
   programs.caelestia = {
     enable = true;

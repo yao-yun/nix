@@ -37,8 +37,6 @@ in
       };
     };
 
-    yaoyun.hyprland.keybinds = {
-      prefix.layout = "hy3:";
-    };
+    yaoyun.hyprland.keybinds.plugin.hy3 = true;
   };
 }
