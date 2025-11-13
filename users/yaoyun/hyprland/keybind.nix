@@ -29,6 +29,7 @@ with util;
 
     plugin = {
       hy3 = mkEnableOption "Use hy3 related keybinds";
+      hyprsplit = mkEnableOption "Use hyprsplit keybinds";
     };
 
     prefix = {
@@ -55,6 +56,7 @@ with util;
         _mm = cfg.mainMod;
         _ms = _mm + "+SHIFT";
         _layout = if cfg.plugin.hy3 then "hy3:" else cfg.prefix.layout;
+        _ws = if cfg.plugin.hyprsplit then "split:" else cfg.prefix.workspace;
       in
       mkMerge [
         {
@@ -72,21 +74,22 @@ with util;
             "3, swipe, move"
           ];
         }
-        # --- Hyprland ---
+        # --- basic ---
         (mkSubmap "global" [
           # shortcuts
-          (mkBinds _mm [ "Q" "E" ] "exec" [ "$terminal" "$fileManager" ] "")
+          (mkBinds _mm [ "Q" "E" "W" ] "exec" [ "$terminal" "$fileManager" "$webbrowser" ] "")
           # -- Focus and movement --
           # change state
           (mkBindsParamed [ _mm _ms ] "F" [
             "fullscreen"
             "fullscreenstate, 0 2"
           ] "")
+          (mkBinds _mm "V" "togglefloating" "" "")
           (mkBinds _ms "C" "${_layout}killactive" "" "")
           # navigation & move
           (mkBinds [ _mm _ms ] [ "H" "J" "K" "L" ]
             [ "${_layout}movefocus" "${_layout}movewindow" ]
-            [ "l" "u" "d" "r" ]
+            [ "l" "d" "u" "r" ]
             ""
           )
           (mkBinds _mm [ "mouse:272" "mouse:273" ] [ "movewindow" "resizewindow" ] "" "m")
@@ -95,14 +98,15 @@ with util;
             "l"
             "r"
           ] "")
-          (mkBinds _ms [ "bracketleft" "bracketright" ] "${_layout}movewindow" [
+          # no _layout prefix, as hy3 does not seem to support inter-monitor movement
+          (mkBinds _ms [ "bracketleft" "bracketright" ] "movewindow" [
             "mon:l"
             "mon:r"
           ] "")
           # workspace
-          (mkNumBinds _mm (i: "${cfg.prefix.workspace}workspace, ${toString i}") "")
+          (mkNumBinds _mm (i: "${_ws}workspace, ${toString i}") "")
           (mkNumBinds _ms (i: "${_layout}movetoworkspace, ${toString i}") "")
-          (mkBinds _ms [ "mouse_down" "mouse_up" ] "${cfg.prefix.workspace}workspace" [ "r+1" "r-1" ] "")
+          (mkBinds _ms [ "mouse_down" "mouse_up" ] "${_ws}workspace" [ "r+1" "r-1" ] "")
           # special Workspace
           (mkBinds _mm "X" "togglespecialworkspace" "magic" "")
           (mkBinds _ms "X" "${_layout}movetoworkspace" "special:magic" "")
@@ -110,14 +114,14 @@ with util;
         (mkSubmap "resize" [
           (mkBinds "" [ "H" "J" "K" "L" ] "resizeactive" [
             "-15 0"
-            "0 -15"
             "0 15"
+            "0 -15"
             "15 0"
           ] "e")
           (mkBinds "SHIFT" [ "H" "J" "K" "L" ] "${_layout}movefocus" [
             "l"
-            "u"
             "d"
+            "u"
             "r"
           ] "")
           (mkBinds "" "escape" "submap" "global" "")
@@ -130,8 +134,8 @@ with util;
           (mkBinds "" [ "XF86AudioRaiseVolume" "XF86AudioLowerVolume" "XF86AudioMute" "XF86AudioMicMute" ]
             "exec"
             [
-              "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ $volumeStep%+"
-              "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; wpctl set-volume @DEFAULT_AUDIO_SINK@ $volumeStep%-"
+              "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"
+              "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
               "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
               "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"
             ]
@@ -146,9 +150,11 @@ with util;
               "caelestia:launcher"
               "caelestia:showall"
             ] "")
+            (mkBinds _ms "S" "exec" "caelestia screenshot --region --freeze" "")
             # (mkBinds _ms "L" "global" "caelestia:lock" "")
             (mkBinds _ms "L" "exec" "caelestia shell -d" "l")
-            (mkBinds _ms "L" "global" "caelestia:lock" "l")
+            # (mkBinds (_mm + "ALT") "L" "global" "caelestia:lock" "l")
+            (mkBinds (_mm + "ALT") "L" "exec" "hyprlock" "l")
             (mkBinds _mm (
               builtins.genList (i: "mouse:" + toString (i + 272)) 6
               ++ [
@@ -179,6 +185,17 @@ with util;
               ]
               "l"
             )
+          ]
+        ))
+
+        # --- hy3 ---
+        (mkIf cfg.plugin.hy3 (
+          mkSubmap "global" [
+            (mkBinds _mm "T" "hy3:changegroup" "toggletab" "")
+            (mkBinds [
+              _mm
+              (_mm + "CTRL")
+            ] "S" "hy3:makegroup" [ "v" "h" ] "")
           ]
         ))
       ];

@@ -1,72 +1,36 @@
-{ pkgs, ... }:
+{
+  pkgs,
+  inputs,
+  config,
+  ...
+}:
 {
   imports = [
-    ./stylix
+    ./stylix.nix
+    ./fcitx.nix
     ./caelestia
     ./hyprland
+    # ./pam.nix
+    inputs.pam_shim.homeModules.default
   ];
-
   config = {
-    nixpkgs.overlays = [
-      (final: prev: {
-        librime =
-          (prev.librime.override {
-            plugins = with pkgs; [
-              librime-lua
-              librime-octagram
-            ];
-          }).overrideAttrs
-            (old: {
-              buildInputs = (old.buildInputs or [ ]) ++ [ pkgs.luajit ];
-            });
-      })
-    ];
-    i18n.inputMethod = {
+    pamShim.enable = true;
+    programs.hyprlock = {
       enable = true;
-      type = "fcitx5";
-      fcitx5 = {
-        waylandFrontend = true;
-        addons = with pkgs; [
-          fcitx5-chinese-addons
-          fcitx5-gtk
-          # rime-data
-          # fcitx5-rime
-          (fcitx5-rime.override {
-            rimeDataPkgs = [ pkgs.rime-ice ];
-          })
-        ];
-        settings = {
-          inputMethod = {
-            "Groups/0" = {
-              Name = "Default";
-              "Default Layout" = "us";
-              DefaultIM = "keyboard-us";
-            };
-            "Groups/0/Items/0".Name = "keyboard-us";
-            "Groups/0/Items/1".Name = "rime";
-            GroupOrder."0" = "Default";
-          };
-          globalOptions = {
-            "HotKey/TriggerKeys"."0" = "Super+space";
-            "HotKey/EnumerateGroupForwardKeys"."0" = "Super+space";
-            "HotKey/EnumerateGroupBackwardKeys"."0" = "Shift+Super+space";
-          };
-        };
-      };
+      package = config.lib.pamShim.replacePam pkgs.hyprlock;
     };
-
-    home.file = {
-
-      ".local/share/fcitx5/rime/default.custom.yaml".text = ''
-        patch:
-            __include: rime_ice_suggestion:/
-        schema_list:
-            - schema: double_pinyin_flypy
-      '';
-    };
-
-    home.sessionVariables = {
-      QT_IM_MODULE = "fcitx";
-    };
+    # Authentication quirks with PAM
+    # home.pam = {
+    #   chkpwdPath = "/usr/bin/unix_chkpwd";
+    #   # overridePackages = [ "i3lock-color" ];
+    # };
+    home.packages = with pkgs; [
+      # mimeo
+      xdg-utils
+    ];
+    xdg.dataFile."flatpak/overrides/global".text = ''
+      [Context]
+      sockets=wayland
+    '';
   };
 }

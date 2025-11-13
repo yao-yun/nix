@@ -1,14 +1,16 @@
 {
   inputs,
   config,
+  lib,
   ...
 }:
+with lib;
 {
   imports = [
     inputs.zen-browser.homeModules.beta
   ];
   programs.zen-browser = {
-    enable = true;
+    # enable = true;
 
     # this only installs kiss and ublock-origin last time I check
     # better just manually set up sync
@@ -42,5 +44,5 @@
     # ];
   };
 
-  stylix.targets.zen-browser.profileNames = if config.stylix.enable then [ "default" ] else [ ];
+  # stylix.targets.zen-browser.profileNames = mkIf config.stylix.enable [ "default" ];
 }

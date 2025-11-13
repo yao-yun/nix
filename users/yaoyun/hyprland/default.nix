@@ -5,20 +5,24 @@
   inputs,
   ...
 }:
+let
+  system = pkgs.stdenv.hostPlatform.system;
+  hyprland-packages = inputs.hyprland.packages.${system};
+in
 {
   imports = [
     ../kitty.nix
     ./keybind.nix
     ./hy3.nix
+    ./hyprsplit.nix
   ];
   config = {
     wayland.windowManager.hyprland = lib.mkMerge [
       {
         enable = true;
         # use flake
-        package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
-        portalPackage =
-          inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
+        package = hyprland-packages.hyprland;
+        portalPackage = hyprland-packages.xdg-desktop-portal-hyprland;
         xwayland.enable = true;
         systemd = {
           enable = true;
@@ -29,9 +33,9 @@
           debug.disable_logs = false;
 
           # variables
-          "$terminal" = "${lib.getExe pkgs.kitty}";
-          "$fileManager" = "$term -- ${lib.getExe pkgs.fish} -i -c ${lib.getExe pkgs.yazi}";
-          # "$browser" = "${lib.getExe pkgs.zen-browser}";
+          "$terminal" = "kitty";
+          "$fileManager" = "$terminal -- fish -i -c yazi";
+          "$webbrowser" = "zen-browser --new-window";
 
           env = [
             "XCURSOR_SIZE,24"
@@ -71,6 +75,9 @@
               input_methods = true;
             };
           };
+          input = {
+            touchpad.natural_scroll = true;
+          };
           animations = {
             enabled = true;
 
@@ -104,6 +111,11 @@
             force_default_wallpaper = 0;
           };
         };
+        extraConfig = ''
+          monitor = eDP-1,2560x1600@165.0,0x297,1.33
+          monitor = eDP-2,2560x1600@165.0,0x297,1.33
+          monitor = DP-1,2560x1440@170.0,1920x0,1
+        '';
       }
     ];
   };

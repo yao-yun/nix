@@ -37,7 +37,7 @@ rec {
   _modulo = a: b: a - (a / b) * b; # ensure a and b are integers before using
   _multiplyStringList =
     listA: listB: delimiter:
-    builtins.concatMap (a: map (b: a + delimiter + b) listB) listA;
+    builtins.concatMap (a: map (b: a + (if b != "" then delimiter else "") + b) listB) listA;
   _zipStringList =
     listA: listB: delimiter:
     let

@@ -5,7 +5,6 @@
 {
   stylix = {
     enable = true;
-    autoEnable = true;
     cursor = {
       name = "macOS";
       package = pkgs.apple-cursor;
@@ -17,7 +16,8 @@
       dark = "Papirus-Dark";
       package = pkgs.papirus-icon-theme;
     };
-    base16Scheme = "${pkgs.base16-schemes}/share/themes/0x96f.yaml";
+    base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-macchiato.yaml";
+    polarity = "dark";
     fonts = {
       serif = {
         package = pkgs.source-han-serif;

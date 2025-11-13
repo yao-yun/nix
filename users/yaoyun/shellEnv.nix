@@ -1,7 +1,7 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 {
   imports = [
-    ./nvim
+    # inputs.nixCats.home
   ];
 
   home.packages = with pkgs; [
@@ -51,6 +51,9 @@
     };
     fish = {
       enable = true;
+      loginShellInit = ''
+        fish_add_path ~/.nix-profile/bin
+      '';
       interactiveShellInit = ''
         set fish_greeting # disable greeting
         # fenv source "~/.nix-profile/etc/profile.d/hm-session-vars.sh" > /dev/null

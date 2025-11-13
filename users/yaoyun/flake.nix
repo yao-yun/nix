@@ -13,6 +13,8 @@
       url = "github:caelestia-dots/shell";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # for pam-fix on Non-nixOS
+    pam_shim.url = "github:Cu3PO42/pam_shim";
     stylix = {
       url = "github:nix-community/stylix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -32,13 +34,26 @@
       url = "github:outfoxxed/hy3?ref=hl0.51.0";
       inputs.hyprland.follows = "hyprland";
     };
+    hyprsplit = {
+      url = "github:shezdy/hyprsplit?ref=v0.51.0";
+      inputs.hyprland.follows = "hyprland";
+    };
+    
   };
 
   outputs =
     { nixpkgs, home-manager, ... }@inputs:
+    let
+      system = "x86_64-linux";
+      pkgs = nixpkgs.legacyPackages.${system};
+    in
     {
       homeConfigurations."yaoyun" = home-manager.lib.homeManagerConfiguration {
-        modules = [ ./home.nix ];
+        inherit pkgs;
+        modules = [
+          inputs.stylix.homeModules.stylix
+          ./home.nix
+        ];
         extraSpecialArgs = { inherit inputs; };
       };
       nixosModules."yaoyun" = [
@@ -62,6 +77,7 @@
         {
           imports = [
             ./nixos/steam.nix
+            ./nixos/stylix.nix
           ];
         }
 
