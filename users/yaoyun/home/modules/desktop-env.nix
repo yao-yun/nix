@@ -8,8 +8,8 @@
   imports = [
     ./stylix.nix
     ./fcitx.nix
-    ./caelestia
-    ./hyprland
+    ./programs/caelestia
+    ./programs/hyprland
     # ./pam.nix
     inputs.pam_shim.homeModules.default
   ];

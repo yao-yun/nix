@@ -42,70 +42,74 @@
   };
 
   outputs =
-    { nixpkgs, home-manager, ... }@inputs:
+    inputs@{ nixpkgs, home-manager, ... }:
     let
       system = "x86_64-linux";
-      pkgs = nixpkgs.legacyPackages.${system};
+      username = "yaoyun";
+      homeDirectory = "/home/${username}";
+      homeModule = ./home;
+      specialArgs = { inherit inputs; };
+      homePkgs = nixpkgs.legacyPackages.${system};
+
+      homeModules = [
+        inputs.stylix.homeModules.stylix
+        homeModule
+      ];
+
+      nixosHomeManagerModule = {
+        home-manager = {
+          useGlobalPkgs = false;
+          useUserPackages = true;
+          backupFileExtension = "hmbak";
+          users.${username} = homeModule;
+          extraSpecialArgs = specialArgs;
+        };
+      };
+
+      nixosLocalModules = [
+        ./nixos/modules/steam.nix
+        ./nixos/modules/stylix.nix
+      ];
+
+      nixosUserModule =
+        { pkgs, ... }:
+        {
+          users.users.${username} = {
+            isNormalUser = true;
+            home = homeDirectory;
+            shell = pkgs.fish;
+            extraGroups = [
+              "NetworkManager"
+              "wheel"
+            ];
+            password = "changeme";
+            openssh.authorizedKeys.keys = [
+              "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINpzFyoXVgbIDrdlyuG0qXAnmMh6TEINBvI/TD98NvNe openpgp:0x99234C74"
+            ];
+          };
+
+          programs.fish.enable = true;
+
+          i18n.extraLocales = [
+            "en_US.UTF-8/UTF-8"
+            "zh_CN.UTF-8/UTF-8"
+          ];
+        };
     in
     {
-      homeConfigurations."yaoyun" = home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
-        modules = [
-          inputs.stylix.homeModules.stylix
-          ./home.nix
-        ];
-        extraSpecialArgs = { inherit inputs; };
+      homeConfigurations.${username} = home-manager.lib.homeManagerConfiguration {
+        pkgs = homePkgs;
+        modules = homeModules;
+        extraSpecialArgs = specialArgs;
       };
-      nixosModules."yaoyun" = [
-        inputs.stylix.nixosModules.stylix
 
-        inputs.home-manager.nixosModules.home-manager
-        {
-          home-manager = {
-            useGlobalPkgs = false;
-            useUserPackages = true;
-            backupFileExtension = "hmbak";
-
-            users.yaoyun = ./home.nix;
-
-            extraSpecialArgs = {
-              inherit inputs;
-            };
-          };
-        }
-
-        {
-          imports = [
-            ./nixos/steam.nix
-            ./nixos/stylix.nix
-          ];
-        }
-
-        (
-          { pkgs, ... }:
-          {
-            users.users.yaoyun = {
-              isNormalUser = true;
-              home = "/home/yaoyun";
-              shell = pkgs.fish;
-              extraGroups = [
-                "NetworkManager"
-                "wheel"
-              ];
-              password = "changeme";
-              openssh.authorizedKeys.keys = [
-                "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINpzFyoXVgbIDrdlyuG0qXAnmMh6TEINBvI/TD98NvNe openpgp:0x99234C74"
-              ];
-            };
-            programs.fish.enable = true;
-
-            i18n.extraLocales = [
-              "en_US.UTF-8/UTF-8"
-              "zh_CN.UTF-8/UTF-8"
-            ];
-          }
-        )
-
-      ];
+      nixosModules.${username} =
+        [
+          inputs.stylix.nixosModules.stylix
+          inputs.home-manager.nixosModules.home-manager
+          nixosHomeManagerModule
+        ]
+        ++ nixosLocalModules
+        ++ [ nixosUserModule ];
     };
 }

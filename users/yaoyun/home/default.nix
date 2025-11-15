@@ -22,10 +22,10 @@
   home.stateVersion = "25.05"; # Please read the comment before changing.
 
   imports = [
-    ./desktopEnv.nix
-    ./desktop.nix
-    ./shellEnv.nix
-    ./zen-browser.nix
+    ./modules/desktop-env.nix
+    ./modules/desktop-apps.nix
+    ./modules/shell.nix
+    ./modules/zen-browser.nix
   ];
 
   # The home.packages option allows you to install Nix packages into your
