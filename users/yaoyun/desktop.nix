@@ -5,6 +5,12 @@ lib.mkMerge [
   {
     nixpkgs.config.allowUnfree = true;
   }
+  # qq wayland in non-nixOS
+  # {
+  #   nixpkgs.overlays = [
+  #   ];
+  # }
+
   {
     home.packages = with pkgs; [
       # messenger

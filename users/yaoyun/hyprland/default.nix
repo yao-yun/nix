@@ -28,7 +28,6 @@ in
           enable = true;
           variables = [ "--all" ];
         };
-        # xwayland.force_zero_scaling = true;
         settings = {
           debug.disable_logs = false;
 
@@ -48,6 +47,7 @@ in
             hide_special_on_workspace_change = true;
           };
           # look and feel
+          xwayland.force_zero_scaling = true;
           general = {
             gaps_in = 3;
             gaps_out = 10;
